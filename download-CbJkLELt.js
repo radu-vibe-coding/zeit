@@ -1,0 +1,1 @@
+function e(e,t){let n=URL.createObjectURL(e),r=document.createElement(`a`);r.href=n,r.download=t,document.body.appendChild(r),r.click(),r.remove(),setTimeout(()=>URL.revokeObjectURL(n),1e4)}function t(e){return e.normalize(`NFKD`).replace(/[̀-ͯ]/g,``).replace(/[^A-Za-z0-9._-]+/g,`-`).replace(/^-+|-+$/g,``)}export{t as n,e as t};
