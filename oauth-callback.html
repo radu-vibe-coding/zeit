@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Zeit – conectare Google</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; background: #f6f5f1; color: #1d2626; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 16px; box-sizing: border-box; text-align: center; }
+  a { color: #14504f; }
+</style>
+</head>
+<body>
+<p id="msg">Se finalizează conectarea…</p>
+<script>
+  // Google sends the user back here with ?code=…&state=… (or ?error=…). This page hands that to the app window that
+  // opened the Google window (src/google/broker.ts) and closes. The code is useless without the token broker's secret.
+  (function () {
+    var q = new URLSearchParams(location.search)
+    var result = { type: 'zeit-oauth', state: q.get('state'), code: q.get('code'), error: q.get('error') }
+    // Remove the code from the address bar and history at once.
+    history.replaceState(null, '', location.pathname)
+    try { new BroadcastChannel('zeit-oauth').postMessage(result) } catch (e) {}
+    // Fallback for browsers without BroadcastChannel: the storage event reaches the other windows of this origin.
+    try { localStorage.setItem('zeit.oauthResult', JSON.stringify(result)); localStorage.removeItem('zeit.oauthResult') } catch (e) {}
+    try { if (window.opener) window.opener.postMessage(result, location.origin) } catch (e) {}
+    setTimeout(function () { window.close() }, 150)
+    setTimeout(function () {
+      document.getElementById('msg').innerHTML = result.error
+        ? 'Conectarea nu a reușit (' + result.error.replace(/[^a-z_]/gi, '') + '). Poți închide această fereastră.'
+        : 'Gata. Poți închide această fereastră și te întorci în <a href="./">Zeit</a>.'
+    }, 800)
+  })()
+</script>
+</body>
+</html>
